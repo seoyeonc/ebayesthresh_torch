@@ -163,15 +163,6 @@ def isotone(x, wt=None, increasing=False):
     the curve is set to be increasing, otherwise to be decreasing.
     The vector ip contains the indices on the original scale of the
     breaks in the regression at each stage.
-
-    Parameters:
-        x (list or numpy.ndarray): Input sequence.
-        wt (list or numpy.ndarray, optional): Weights for the sequence x. Defaults to None.
-        increasing (bool, optional): If True, the curve is set to be increasing, otherwise decreasing.
-            Defaults to False.
-
-    Returns:
-        list: Isotonic fit to the input sequence x.
     """
     if wt is None:
         wt = torch.ones_like(x)
@@ -303,19 +294,6 @@ def postmean_cauchy(x, w):
 
 
 def postmean_laplace(x, s=1, w=0.5, a=0.5):
-    """
-    Find the posterior mean for the double exponential prior for
-    given x, s (sd), w, and a.
-
-    Args:
-        x (float or numpy array): Input data.
-        s (float): Standard deviation.
-        w (float): Parameter.
-        a (float): Parameter.
-
-    Returns:
-        float or numpy array: Posterior mean.
-    """
     a = min(a, 20)
     
     # First find the probability of being non-zero
