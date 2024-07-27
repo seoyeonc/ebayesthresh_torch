@@ -5,6 +5,8 @@ import warnings
 import torch
 from scipy.stats import norm
 
+import numpy as np
+
 torch.set_printoptions(precision=15)
 
 
@@ -40,20 +42,20 @@ def beta_laplace(x, s=1, a=0.5):
     a - the scale parameter of the Laplace distribution
     """
     x = torch.abs(x).type(torch.float64)
-    
     xpa = x / s + s * a
+
     xma = x / s - s * a
-    
+
     rat1 = 1 / xpa
 
-    cond1 = xpa < 35
-
-    rat1[cond1] = torch.tensor(norm.cdf(-xpa[xpa < 35], loc=0, scale=1) / norm.pdf(xpa[xpa < 35], loc=0, scale=1))
+    xpa_np = np.array(xpa)
+    rat1[xpa_np < 35] = torch.tensor(norm.cdf(-xpa_np[xpa_np < 35], loc=0, scale=1) / norm.pdf(xpa_np[xpa_np < 35], loc=0, scale=1))
 
     rat2 = 1 / torch.abs(xma)
-    cond2 = xma > -35
 
-    rat2[cond2] = torch.distributions.Normal(0, 1).cdf(xma[cond2]) / torch.distributions.Normal(0, 1).log_prob(xma[cond2]).exp()
+    xma_np = np.array(xma)
+    xma_np[xma_np > 35] = 35
+    rat2[xma_np > -35] = torch.tensor(norm.cdf(xma_np[xma_np > -35], loc=0, scale=1) / norm.pdf(xma_np[xma_np > -35], loc=0, scale=1))
 
     beta = (a * s / 2) * (rat1 + rat2) - 1
     
