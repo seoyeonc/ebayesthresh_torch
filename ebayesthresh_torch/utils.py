@@ -199,7 +199,7 @@ def isotone(x, wt=None, increasing=False):
         dx = torch.diff(x)
         nx = len(x)
 
-    jj = torch.zeros(nn, dtype=torch.int32)
+    jj = torch.zeros(nn, dtype=torch.float64)
     jj[ip] = 1
     z = x[torch.cumsum(jj, dim=0) - 1]
 
@@ -310,7 +310,7 @@ def postmean_laplace(x, s=1, w=0.5, a=0.5):
 
     cp1 = torch.tensor(norm.cdf(xma, loc=0, scale=1))
     cp2 = torch.tensor(norm.cdf(-xpa, loc=0, scale=1))
-    ef = torch.exp(torch.minimum(2 * a * x, torch.tensor(100.0, dtype=torch.float32)))
+    ef = torch.exp(torch.minimum(2 * a * x, torch.tensor(100.0, dtype=torch.float64)))
     postmean_cond = x - a * s**2 * (2 * cp1 / (cp1 + ef * cp2) - 1)
     
     return sx * w_post * postmean_cond
@@ -382,7 +382,8 @@ def postmed_laplace(x, s=1, w=0.5, a=0.5):
     sx = torch.sign(x)
     x = torch.abs(x)
     xma = x / s - s * a
-    zz = 1 / a * (1 / s * torch.tensor(norm.pdf(xma, loc=0, scale=1))) * (1 / w + beta_laplace(x, s, a))
+    xma_np = np.array(xma.detach())
+    zz = 1 / a * (1 / s * torch.tensor(norm.pdf(xma_np, loc=0, scale=1))) * (1 / w + beta_laplace(x, s, a))
     zz[xma > 25] = 0.5
     mucor = torch.tensor(norm.ppf(torch.minimum(zz, torch.tensor(1))))
     muhat = sx * torch.maximum(torch.tensor(0), xma - mucor) * s
@@ -636,8 +637,8 @@ def vecbinsolv(zf, fun, tlo, thi, nits=30, **kwargs):
         else:
             nz = zf.shape[0] 
     
-    tlo = torch.full((nz,), tlo, dtype=torch.float32)
-    thi = torch.full((nz,), thi, dtype=torch.float32)
+    tlo = torch.full((nz,), tlo, dtype=torch.float64)
+    thi = torch.full((nz,), thi, dtype=torch.float64)
     
     if tlo.numel() != nz:
         raise ValueError("Lower constraint has to be homogeneous or have the same length as the number of functions.")
