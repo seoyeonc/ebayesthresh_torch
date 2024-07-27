@@ -39,24 +39,23 @@ def beta_laplace(x, s=1, a=0.5):
     s - the value or vector of standard deviations; if vector, must have the same length as x
     a - the scale parameter of the Laplace distribution
     """
-    # Compute xpa and xma
-    x = torch.abs(x)
+    x = torch.abs(x).type(torch.float64)
+    
+    xpa = x / s + s * a
+    xma = x / s - s * a
+    
+    rat1 = 1 / xpa
 
-    xpa = (x / s + s * a).detach().numpy()
+    cond1 = xpa < 35
 
-    xma = (x / s - s * a).detach().numpy()
+    rat1[cond1] = torch.tensor(norm.cdf(-xpa[xpa < 35], loc=0, scale=1) / norm.pdf(xpa[xpa < 35], loc=0, scale=1))
 
-    rat1 = torch.tensor(1 / xpa, dtype=torch.float64)
+    rat2 = 1 / torch.abs(xma)
+    cond2 = xma > -35
 
-    rat1[xpa < 35] = torch.tensor(norm.cdf(-xpa[xpa < 35], loc=0, scale=1) / norm.pdf(xpa[xpa < 35], loc=0, scale=1))
+    rat2[cond2] = torch.distributions.Normal(0, 1).cdf(xma[cond2]) / torch.distributions.Normal(0, 1).log_prob(xma[cond2]).exp()
 
-    rat2 = (1 / torch.abs(torch.tensor(xma))).clone().detach().type(torch.float64)
-
-    xma = torch.where(torch.tensor(xma) > 35, torch.tensor(35.0), torch.tensor(xma)).type(torch.float64)
-
-    rat2[xma > -35] = torch.tensor(norm.cdf(xma[xma > -35], loc=0, scale=1) / norm.pdf(xma[xma > -35], loc=0, scale=1))
-
-    beta = (a * s) / 2 * (rat1 + rat2) - 1
+    beta = (a * s / 2) * (rat1 + rat2) - 1
     
     return beta
 
