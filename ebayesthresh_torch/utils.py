@@ -49,13 +49,13 @@ def beta_laplace(x, s=1, a=0.5):
     rat1 = 1 / xpa
 
     xpa_np = np.array(xpa)
-    rat1[xpa_np < 35] = torch.tensor(norm.cdf(-xpa_np[xpa_np < 35], loc=0, scale=1) / norm.pdf(xpa_np[xpa_np < 35], loc=0, scale=1))
+    rat1[xpa < 35] = torch.tensor(norm.cdf(-xpa_np[xpa_np < 35], loc=0, scale=1) / norm.pdf(xpa_np[xpa_np < 35], loc=0, scale=1))
 
     rat2 = 1 / torch.abs(xma)
 
     xma_np = np.array(xma)
     xma_np[xma_np > 35] = 35
-    rat2[xma_np > -35] = torch.tensor(norm.cdf(xma_np[xma_np > -35], loc=0, scale=1) / norm.pdf(xma_np[xma_np > -35], loc=0, scale=1))
+    rat2[xma > -35] = torch.tensor(norm.cdf(xma_np[xma_np > -35], loc=0, scale=1) / norm.pdf(xma_np[xma_np > -35], loc=0, scale=1))
 
     beta = (a * s / 2) * (rat1 + rat2) - 1
     
