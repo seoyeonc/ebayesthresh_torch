@@ -385,8 +385,8 @@ def postmed_laplace(x, s=1, w=0.5, a=0.5):
     xma_np = np.array(xma.detach())
     zz = 1 / a * (1 / s * torch.tensor(norm.pdf(xma_np, loc=0, scale=1))) * (1 / w + beta_laplace(x, s, a))
     zz[xma > 25] = 0.5
-    zz_np = np.array(zz.detach())
-    mucor = torch.tensor(norm.ppf(torch.minimum(zz_np, torch.tensor(1))))
+    tmp = np.array(torch.minimum(zz, torch.tensor(1)).detach())
+    mucor = torch.tensor(norm.ppf(tmp))
     muhat = sx * torch.maximum(torch.tensor(0), xma - mucor) * s
     
     return muhat
