@@ -506,7 +506,10 @@ def wfromx(x, s=1, prior="laplace", a=0.5, universalthresh=True):
     universalthresh - If universalthresh = TRUE, the thresholds will be upper bounded by universal
     threshold; otherwise, the thresholds can take any non-negative values.
     """
-    s = torch.tensor(s, dtype=torch.float)
+    if not isinstance(s, torch.Tensor):
+        s = torch.tensor(s, dtype=torch.float64)
+    
+    s = s.clone().detach()
 
     pr = prior[0:1]
     
