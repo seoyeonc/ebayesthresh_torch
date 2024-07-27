@@ -42,20 +42,20 @@ def beta_laplace(x, s=1, a=0.5):
     # Compute xpa and xma
     x = torch.abs(x)
 
-    xpa = x / s + s * a
+    xpa = (x / s + s * a).detach().numpy()
 
-    xma = x / s - s * a
+    xma = (x / s - s * a).detach().numpy()
 
-    rat1 = (1 / xpa).clone().detach().type(torch.float64)
+    rat1 = torch.tensor(1 / xpa, dtype=torch.float64)
 
     rat1[xpa < 35] = torch.tensor(norm.cdf(-xpa[xpa < 35], loc=0, scale=1) / norm.pdf(xpa[xpa < 35], loc=0, scale=1))
 
-    rat2 = (1 / torch.abs(xma)).clone().detach().type(torch.float64)
+    rat2 = (1 / torch.abs(torch.tensor(xma))).clone().detach().type(torch.float64)
 
-    xma = torch.where(xma > 35, torch.tensor(35.0), xma)
+    xma = torch.where(torch.tensor(xma) > 35, torch.tensor(35.0), torch.tensor(xma)).type(torch.float64)
 
     rat2[xma > -35] = torch.tensor(norm.cdf(xma[xma > -35], loc=0, scale=1) / norm.pdf(xma[xma > -35], loc=0, scale=1))
-    
+
     beta = (a * s) / 2 * (rat1 + rat2) - 1
     
     return beta
