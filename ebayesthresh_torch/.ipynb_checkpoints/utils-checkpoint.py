@@ -223,7 +223,7 @@ def laplace_threshzero(x, s=1, w=0.5, a=0.5):
     
     xma = x / s - s * a
     xma_np = np.array(xma.detach())
-    z = torch.tensor(norm.cdf(xma_np, loc=0, scale=1)) - (1 / a) * (1 / s * torch.tensor(norm.pdf(xma_np, loc=0, scale=1))) * (1 / w + ebayesthresh_torch.beta_laplace(x, s, a))
+    z = torch.tensor(norm.cdf(xma_np, loc=0, scale=1)) - (1 / a) * (1 / s * torch.tensor(norm.pdf(xma_np, loc=0, scale=1))) * (1 / w + beta_laplace(x, s, a))
     
     return z
 
