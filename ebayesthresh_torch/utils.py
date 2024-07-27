@@ -16,7 +16,7 @@ def beta_cauchy(x):
     Parameters:
     x - a real value or vector
     """
-    x = torch.tensor(x,dtype=torch.float64)
+    x = x.clone().detach().type(torch.float64)
 
     phix = torch.tensor(norm.pdf(x, loc=0, scale=1))
     
@@ -46,11 +46,11 @@ def beta_laplace(x, s=1, a=0.5):
 
     xma = x / s - s * a
 
-    rat1 = torch.tensor(1 / xpa, dtype=torch.float64)
+    rat1 = (1 / xpa).clone().detach().type(torch.float64)
 
     rat1[xpa < 35] = torch.tensor(norm.cdf(-xpa[xpa < 35], loc=0, scale=1) / norm.pdf(xpa[xpa < 35], loc=0, scale=1))
 
-    rat2 = torch.tensor(1 / torch.abs(xma), dtype=torch.float64)
+    rat2 = (1 / torch.abs(xma)).clone().detach().type(torch.float64)
 
     xma = torch.where(xma > 35, torch.tensor(35.0), xma)
 
@@ -473,11 +473,11 @@ def wfromt(tt, s=1, prior="laplace", a=0.5):
     prior - Specification of prior to be used; can be "cauchy" or "laplace".
     a - Scale factor if Laplace prior is used. Ignored if Cauchy prior is used.
     """
-    tt = torch.tensor(tt, dtype=torch.float64)
+    tt = tt.clone().detach().type(torch.float64)
     
     pr = prior[0:1]
     if pr == "l":
-        tma = torch.tensor(tt / s - s * a)
+        tma = (tt / s - s * a).clone().detach().type(torch.float64)
         wi = 1 / torch.abs(tma)
         wi[tma > -35] = torch.tensor(norm.cdf(tma[tma > -35], loc=0, scale=1)/norm.pdf(tma[tma > -35], loc=0, scale=1))
         wi = a * s * wi - beta_laplace(tt, s, a)
@@ -624,9 +624,13 @@ def vecbinsolv(zf, fun, tlo, thi, nits=30, **kwargs):
     w = kwargs.get('w', 0) 
     a = kwargs.get('a', 0) 
     
-    if isinstance(zf, (int, float, str, bool)) :
+    if isinstance(zf, (int, float, str, bool)):
         nz = len(str(zf))
-    else : nz = zf.shape[0]
+    else:
+        if zf.ndimension() == 0: 
+            nz = len(str(zf.item()))
+        else:
+            nz = zf.shape[0] 
     
     tlo = torch.full((nz,), tlo, dtype=torch.float32)
     thi = torch.full((nz,), thi, dtype=torch.float32)
